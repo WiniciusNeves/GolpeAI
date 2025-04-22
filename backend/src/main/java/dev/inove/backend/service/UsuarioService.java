@@ -17,6 +17,9 @@ public class UsuarioService {
         return repository.findAll();
     }
 
+    public Usuario buscar(Long id) {
+        return repository.findById(id).orElse(null);
+    }
     public Usuario criar(Usuario usuario) {
         return repository.save(usuario);
     }

@@ -1,10 +1,11 @@
 package dev.inove.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import dev.inove.backend.model.Entregador;
-import dev.inove.backend.model.TentativaGolpe;
 import dev.inove.backend.model.Usuario;
 import dev.inove.backend.model.ValidacaoEntrega;
 import dev.inove.backend.repository.EntregadorRepository;
@@ -25,29 +26,48 @@ public class ValidacaoEntregaController {
     private EntregadorRepository entregadorRepository;
 
     @PostMapping("/gerar/{usuarioId}/{entregadorId}")
-    public ValidacaoEntrega gerarValidacao(@PathVariable Long usuarioId, @PathVariable Long entregadorId) {
+    public ResponseEntity<?> gerarValidacao(@PathVariable Long usuarioId, @PathVariable Long entregadorId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        Entregador entregador = entregadorRepository.findById(entregadorId)
-                .orElseThrow(() -> new RuntimeException("Entregador não encontrado"));
+                .orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        }
 
-        return validacaoEntregaService.gerarValidacao(usuario, entregador);
+        Entregador entregador = entregadorRepository.findById(entregadorId)
+                .orElse(null);
+        if (entregador == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entregador não encontrado");
+        }
+
+        ValidacaoEntrega validacao = validacaoEntregaService.gerarValidacao(usuario, entregador);
+        return ResponseEntity.status(HttpStatus.CREATED).body(validacao);
     }
 
     @GetMapping("/validar")
-    public boolean validarCodigo(
+    public ResponseEntity<?> validarCodigo(
             @RequestParam String codigo,
             @RequestParam Long usuarioId,
             @RequestParam Long entregadorId) {
-        return validacaoEntregaService.validarCodigo(codigo, usuarioId, entregadorId);
+
+        boolean valido = validacaoEntregaService.validarCodigo(codigo, usuarioId, entregadorId);
+        if (valido) {
+            return ResponseEntity.ok("Código válido!");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Código inválido ou não localizado");
+        }
     }
 
     @PutMapping("/concluir")
-    public String concluirValidacao(
+    public ResponseEntity<String> concluirValidacao(
             @RequestParam String codigo,
             @RequestParam Long usuarioId,
             @RequestParam Long entregadorId) {
-        return validacaoEntregaService.concluirValidacao(codigo, usuarioId, entregadorId);
+
+        String resultado = validacaoEntregaService.concluirValidacao(codigo, usuarioId, entregadorId);
+        if (resultado.contains("sucesso")) {
+            return ResponseEntity.ok(resultado);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
+        }
     }
-    
 }

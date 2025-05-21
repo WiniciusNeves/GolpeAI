@@ -1,19 +1,23 @@
 package dev.inove.backend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import dev.inove.backend.model.Entregador;
 import dev.inove.backend.model.Usuario;
 import dev.inove.backend.model.ValidacaoEntrega;
 import dev.inove.backend.repository.EntregadorRepository;
 import dev.inove.backend.repository.UsuarioRepository;
 import dev.inove.backend.service.ValidacaoEntregaService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador responsável pela geração, validação e conclusão de códigos de entrega.
+ */
 @RestController
 @RequestMapping("/api/validacao")
+@Slf4j
 public class ValidacaoEntregaController {
 
     @Autowired
@@ -25,49 +29,80 @@ public class ValidacaoEntregaController {
     @Autowired
     private EntregadorRepository entregadorRepository;
 
+    /**
+     * Gera um novo código de validação entre usuário e entregador.
+     */
     @PostMapping("/gerar/{usuarioId}/{entregadorId}")
     public ResponseEntity<?> gerarValidacao(@PathVariable Long usuarioId, @PathVariable Long entregadorId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElse(null);
-        if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
-        }
+        log.info("Gerando código de validação para usuário ID: {} e entregador ID: {}", usuarioId, entregadorId);
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+            if (usuario == null) {
+                log.warn("Usuário não encontrado com ID: {}", usuarioId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+            }
 
-        Entregador entregador = entregadorRepository.findById(entregadorId)
-                .orElse(null);
-        if (entregador == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entregador não encontrado");
-        }
+            Entregador entregador = entregadorRepository.findById(entregadorId).orElse(null);
+            if (entregador == null) {
+                log.warn("Entregador não encontrado com ID: {}", entregadorId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entregador não encontrado");
+            }
 
-        ValidacaoEntrega validacao = validacaoEntregaService.gerarValidacao(usuario, entregador);
-        return ResponseEntity.status(HttpStatus.CREATED).body(validacao);
+            ValidacaoEntrega validacao = validacaoEntregaService.gerarValidacao(usuario, entregador);
+            log.info("Código gerado com sucesso: {}", validacao.getCodigoVerificacao());
+            return ResponseEntity.status(HttpStatus.CREATED).body(validacao);
+        } catch (Exception e) {
+            log.error("Erro ao gerar código de validação.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao gerar código.");
+        }
     }
 
+    /**
+     * Valida um código de entrega com base em usuário e entregador.
+     */
     @GetMapping("/validar")
     public ResponseEntity<?> validarCodigo(
             @RequestParam String codigo,
             @RequestParam Long usuarioId,
             @RequestParam Long entregadorId) {
-
-        boolean valido = validacaoEntregaService.validarCodigo(codigo, usuarioId, entregadorId);
-        if (valido) {
-            return ResponseEntity.ok("Código válido!");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Código inválido ou não localizado");
+        log.info("Validando código: {}", codigo);
+        try {
+            boolean valido = validacaoEntregaService.validarCodigo(codigo, usuarioId, entregadorId);
+            if (valido) {
+                log.info("Código válido.");
+                return ResponseEntity.ok("Código válido!");
+            } else {
+                log.warn("Código inválido ou não localizado.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Código inválido ou não localizado");
+            }
+        } catch (Exception e) {
+            log.error("Erro ao validar código.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao validar código.");
         }
     }
 
+    /**
+     * Conclui uma validação de entrega após a confirmação do código.
+     */
     @PutMapping("/concluir")
     public ResponseEntity<String> concluirValidacao(
             @RequestParam String codigo,
             @RequestParam Long usuarioId,
             @RequestParam Long entregadorId) {
-
-        String resultado = validacaoEntregaService.concluirValidacao(codigo, usuarioId, entregadorId);
-        if (resultado.contains("sucesso")) {
-            return ResponseEntity.ok(resultado);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
+        log.info("Concluindo validação para código: {}", codigo);
+        try {
+            String resultado = validacaoEntregaService.concluirValidacao(codigo, usuarioId, entregadorId);
+            if (resultado.toLowerCase().contains("sucesso")) {
+                log.info("Validação concluída com sucesso.");
+                return ResponseEntity.ok(resultado);
+            } else {
+                log.warn("Falha ao concluir validação: {}", resultado);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
+            }
+        } catch (Exception e) {
+            log.error("Erro ao concluir validação.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao concluir validação.");
         }
     }
 }
+

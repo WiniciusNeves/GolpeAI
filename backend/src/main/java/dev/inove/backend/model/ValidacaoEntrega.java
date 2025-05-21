@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "validacao_entrega")
@@ -18,22 +19,28 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ValidacaoEntrega {
+
+    // ID único gerado automaticamente para cada registro de validação
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Código de verificação da entrega, pode ser utilizado para autenticar a validação
     private String codigoVerificacao;
 
-    private String dataHora;
+    // Data e hora da validação. Usar LocalDateTime permite manipular a data e hora corretamente.
+    private LocalDateTime dataHora;
 
+    // Relacionamento muitos-para-um com a tabela de usuários (quem fez a validação)
     @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id")  // Chave estrangeira para a tabela de usuários
     private Usuario usuario;
 
+    // Relacionamento muitos-para-um com a tabela de entregadores (quem realizou a entrega)
     @ManyToOne
-    @JoinColumn(name = "entregador_id")
+    @JoinColumn(name = "entregador_id")  // Chave estrangeira para a tabela de entregadores
     private Entregador entregador;
 
+    // Status da validação da entrega, que pode ser algo como "PENDENTE", "CONCLUÍDO" ou "CANCELADO"
     private String status;
 }
-

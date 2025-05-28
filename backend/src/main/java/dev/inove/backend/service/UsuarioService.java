@@ -76,17 +76,4 @@ public class UsuarioService {
         repository.deleteById(id);
     }
 
-    /**
-     * Realiza o login com email e senha.
-     *
-     * @param email email do usuário.
-     * @param senha senha do usuário.
-     * @return usuário autenticado.
-     */
-    public Usuario login(String email, String senha) {
-        log.info("[UsuarioService] Tentativa de login com email: {}", email);
-        return repository.findByEmail(email)
-                .filter(u -> u.getSenha().equals(senha))
-                .orElseThrow(() -> new RuntimeException("Usuário ou senha inválidos"));
-    }
 }

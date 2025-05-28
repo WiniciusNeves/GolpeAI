@@ -37,27 +37,6 @@ public class UsuarioController {
     }
 
     /**
-     * Realiza o login com email e senha.
-     */
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        log.info("Tentativa de login para o email: {}", usuario.getEmail());
-        try {
-            Usuario user = service.login(usuario.getEmail(), usuario.getSenha());
-            if (user != null) {
-                log.info("Login bem-sucedido para o usuário com email: {}", usuario.getEmail());
-                return ResponseEntity.ok(user);
-            } else {
-                log.warn("Login falhou para o email: {}", usuario.getEmail());
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email ou senha inválidos");
-            }
-        } catch (Exception e) {
-            log.error("Erro ao tentar fazer login.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao tentar fazer login.");
-        }
-    }
-
-    /**
      * Cria um novo usuário.
      */
     @PostMapping

@@ -83,36 +83,4 @@ public class UsuarioServiceTest {
         verify(repository, times(1)).deleteById(id);
     }
 
-    @Test
-    void deveLogarComEmailSenhaCorretos() {
-        Usuario u = new Usuario(1L, "João", "joao@email.com", "senha123", "Rua X", "1199999");
-        when(repository.findByEmail("joao@email.com")).thenReturn(Optional.of(u));
-
-        Usuario resultado = service.login("joao@email.com", "senha123");
-
-        assertEquals("João", resultado.getNome());
-    }
-
-    @Test
-    void deveLancarErroSeSenhaIncorreta() {
-        Usuario u = new Usuario(1L, "João", "joao@email.com", "senha123", "Rua X", "1199999");
-        when(repository.findByEmail("joao@email.com")).thenReturn(Optional.of(u));
-
-        Exception ex = assertThrows(RuntimeException.class, () -> {
-            service.login("joao@email.com", "errada");
-        });
-
-        assertEquals("Usuário ou senha inválidos", ex.getMessage());
-    }
-
-    @Test
-    void deveLancarErroSeUsuarioNaoExiste() {
-        when(repository.findByEmail("naoexiste@email.com")).thenReturn(Optional.empty());
-
-        Exception ex = assertThrows(RuntimeException.class, () -> {
-            service.login("naoexiste@email.com", "senha");
-        });
-
-        assertEquals("Usuário ou senha inválidos", ex.getMessage());
-    }
 }

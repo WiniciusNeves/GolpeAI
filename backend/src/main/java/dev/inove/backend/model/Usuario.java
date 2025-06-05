@@ -23,9 +23,7 @@ public class Usuario {
     /** E-mail do usuário (utilizado para login) */
     private String email;
 
-    /** Senha de acesso (recomenda-se hash em produção) */
-    private String senha;
-
+   
     /** Endereço do usuário para entrega */
     private String endereco;
 

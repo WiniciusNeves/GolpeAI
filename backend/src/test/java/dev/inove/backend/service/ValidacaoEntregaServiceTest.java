@@ -26,7 +26,7 @@ public class ValidacaoEntregaServiceTest {
 
     @Test
     void deveGerarValidacaoComUsuarioEEntregador() {
-        Usuario usuario = new Usuario(1L, "João", "joao@email.com", "senha", "Rua X", "1199999");
+        Usuario usuario = new Usuario(1L, "João", "joao@email.com", "Rua X", "1199999");
         Entregador entregador = new Entregador(1L, "Carlos", "carlos@email.com", "ABC1234", "urlFoto", "iFood");
 
         ValidacaoEntrega esperado = new ValidacaoEntrega();

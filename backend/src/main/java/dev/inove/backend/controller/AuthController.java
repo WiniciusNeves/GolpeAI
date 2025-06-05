@@ -5,6 +5,8 @@ import dev.inove.backend.model.AuthUser;
 import dev.inove.backend.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +44,16 @@ public class AuthController {
         }
 
         log.warn("Credenciais inválidas para o usuário: {}", auth.getEmail());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+        try {
+            AuthUser user = authService.findByEmail(auth.getEmail()).orElseThrow();
+            if (!user.getSenha().equals(auth.getSenha())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+            }
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não registrado");
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao realizar login");
     }
 
     /**

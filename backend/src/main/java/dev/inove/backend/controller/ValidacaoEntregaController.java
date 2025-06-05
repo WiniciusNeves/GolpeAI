@@ -33,11 +33,10 @@ public class ValidacaoEntregaController {
     @Autowired
     private ValidacaoEntregaRepository validacaoEntregaRepository;
 
-
     /**
      * Retorna todos os códigos de validação gerados.
      */
-    @GetMapping("/todos")
+    @GetMapping("/")
     public ResponseEntity<?> listarTodosCodigos() {
         log.info("Listando todos os códigos de validação.");
         try {
@@ -45,6 +44,22 @@ public class ValidacaoEntregaController {
         } catch (Exception e) {
             log.error("Erro ao listar códigos de validação.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao listar códigos.");
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarCodigo(@PathVariable Long id) {
+        log.info("Buscando código de validação com ID: {}", id);
+        try {
+            ValidacaoEntrega codigo = validacaoEntregaRepository.findById(id).orElse(null);
+            if (codigo == null) {
+                log.warn("Código de validação não encontrado com ID: {}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Código de validação não encontrado");
+            }
+            return ResponseEntity.ok(codigo);
+        } catch (Exception e) {
+            log.error("Erro ao buscar código de validação com ID: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao buscar código de validação");
         }
     }
 
@@ -131,7 +146,17 @@ public class ValidacaoEntregaController {
     public ResponseEntity<String> excluirValidacao(@PathVariable Long id) {
         log.info("Excluindo validação com ID: {}", id);
         try {
-            validacaoEntregaRepository.deleteById(id);
+            ValidacaoEntrega v = validacaoEntregaRepository.findById(id).orElse(null);
+            if (v == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Validação não encontrada.");
+            }
+
+            // Dissocia os objetos antes de deletar (evita constraint violation)
+            v.setUsuario(null);
+            v.setEntregador(null);
+            validacaoEntregaRepository.save(v);
+            validacaoEntregaRepository.delete(v);
+
             log.info("Validação excluída com sucesso.");
             return ResponseEntity.ok("Validação excluída com sucesso!");
         } catch (Exception e) {
@@ -139,5 +164,5 @@ public class ValidacaoEntregaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao excluir validação.");
         }
     }
-}
 
+}

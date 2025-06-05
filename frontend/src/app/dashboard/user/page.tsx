@@ -8,7 +8,6 @@ type Usuario = {
   id: number
   nome: string
   email: string
-  senha: string
   endereco: string
   telefone: string
 }
@@ -17,7 +16,6 @@ export default function UsersPage() {
   const [users, setUsers] = useState<Usuario[]>([])
   const [nome, setNome] = useState<string>('')
   const [email, setEmail] = useState<string>('')
-  const [senha, setSenha] = useState<string>('')
   const [endereco, setEndereco] = useState<string>('')
   const [telefone, setTelefone] = useState<string>('')
   const [editId, setEditId] = useState<number | null>(null)
@@ -39,10 +37,10 @@ export default function UsersPage() {
     e.preventDefault()
     try {
       if (editId) {
-        await atualizarUsuario(editId, email, senha, nome, endereco, telefone)
+        await atualizarUsuario(editId, email, nome, endereco, telefone)
         alert('Usuário atualizado!')
       } else {
-        await cadastrarUsuario(email, senha, nome, endereco, telefone)
+        await cadastrarUsuario(email, nome, endereco, telefone)
         alert('Usuário criado!')
       }
       resetForm()
@@ -68,7 +66,6 @@ export default function UsersPage() {
     setEditId(user.id)
     setNome(user.nome)
     setEmail(user.email)
-    setSenha('') // Senha em branco para segurança
     setEndereco(user.endereco)
     setTelefone(user.telefone)
   }
@@ -77,7 +74,6 @@ export default function UsersPage() {
     setEditId(null)
     setNome('')
     setEmail('')
-    setSenha('')
     setEndereco('')
     setTelefone('')
   }
@@ -91,9 +87,8 @@ export default function UsersPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Nome" value={nome} onChange={setNome} />
           <Input label="E-mail" value={email} onChange={setEmail} />
-          <Input label="Senha" type="password" value={senha} onChange={setSenha} />
           <Input label="Telefone" value={telefone} onChange={setTelefone} />
-          <Input label="Endereço" value={endereco} onChange={setEndereco} className="md:col-span-2" />
+          <Input label="Endereço" value={endereco} onChange={setEndereco} />
         </div>
         <div className="flex justify-between gap-4">
           <button
@@ -183,5 +178,4 @@ function Input({
     </div>
   )
 }
-
 

@@ -4,13 +4,26 @@ export interface CodigoValidacao {
   id: number
   codigoVerificacao: string
   status: string
-  usuario: { id: number, nome: string }
-  entregador: { id: number, nome: string }
+  usuario: {
+    endereco: string
+    email: string
+    id: number
+    nome: string
+    telefone: string
+  }
+  entregador: {
+    fotoUrl: string
+    empresa: string
+    placa: string
+    email: string
+    id: number
+    nome: string
+  }
 }
 
 // Listar todos os códigos
 export async function listarCodigos(): Promise<CodigoValidacao[]> {
-  const res = await apiRouter.get('/validacao/todos')
+  const res = await apiRouter.get('/validacao/')
   return res.data
 }
 
@@ -25,6 +38,11 @@ export async function validarCodigo(codigo: string, usuarioId: number, entregado
   const res = await apiRouter.get('/validacao/validar', {
     params: { codigo, usuarioId, entregadorId }
   })
+  return res.data
+}
+
+export async function getValidacaoById(id: number | string, email: string, endereco: string, telefone: string, placa: string) {
+  const res = await apiRouter.get(`/validacao/${id}`, {params:{ email, endereco, telefone, placa }})
   return res.data
 }
 

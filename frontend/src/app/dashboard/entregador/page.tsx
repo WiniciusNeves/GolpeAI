@@ -93,7 +93,31 @@ export default function EntregadoresPage() {
           <Input label="E-mail" value={email} onChange={setEmail} />
           <Input label="Placa" value={placa} onChange={setPlaca} />
           <Input label="Empresa" value={empresa} onChange={setEmpresa} />
-          <Input label="Foto URL" value={fotoUrl} onChange={setFotoUrl} className="md:col-span-2" />
+          <div className="flex flex-col md:col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-1">Foto</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  const reader = new FileReader()
+                  reader.onload = (ev) => {
+                    setFotoUrl(ev.target?.result as string)
+                  }
+                  reader.readAsDataURL(e.target.files[0])
+                }
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2"
+            />
+            {fotoUrl && (
+              <img
+                src={fotoUrl}
+                alt="Prévia da foto"
+                className="mt-2 h-20 w-20 object-cover rounded-full border"
+              />
+            )}
+          </div>
+
         </div>
         <div className="flex gap-2">
           <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">

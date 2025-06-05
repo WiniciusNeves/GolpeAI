@@ -4,17 +4,15 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
   listarCodigos,
-  concluirCodigo,
   excluirValidacao,
   CodigoValidacao
 } from '../../services/validacaoService'
 
-import { Eye, CheckCircle, Trash2 } from 'lucide-react'
+import { Eye, Trash2 } from 'lucide-react'
 
 export default function DashboardHome() {
   const [codigos, setCodigos] = useState<CodigoValidacao[]>([])
   const [loading, setLoading] = useState(true)
-  const [concluindoId, setConcluindoId] = useState<number | null>(null)
   const [excluindoId, setExcluindoId] = useState<number | null>(null)
 
   const fetchCodigos = async () => {
@@ -32,22 +30,6 @@ export default function DashboardHome() {
   useEffect(() => {
     fetchCodigos()
   }, [])
-
-  const handleConcluir = async (codigo: CodigoValidacao) => {
-    setConcluindoId(codigo.id)
-    try {
-      await concluirCodigo(
-        codigo.codigoVerificacao,
-        codigo.usuario.id,
-        codigo.entregador.id
-      )
-      await fetchCodigos()
-    } catch (err) {
-      console.error('Erro ao concluir código', err)
-    } finally {
-      setConcluindoId(null)
-    }
-  }
 
   const handleExcluir = async (id: number) => {
     setExcluindoId(id)
@@ -96,17 +78,6 @@ export default function DashboardHome() {
                       <Eye className="w-4 h-4" />
                       Verificar
                     </Link>
-
-                    {codigo.status === 'PENDENTE' && (
-                      <button
-                        onClick={() => handleConcluir(codigo)}
-                        disabled={concluindoId === codigo.id}
-                        className="flex items-center gap-1 text-green-600 hover:underline disabled:opacity-50"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        {concluindoId === codigo.id ? 'Concluindo...' : 'Concluir'}
-                      </button>
-                    )}
 
                     <button
                       onClick={() => handleExcluir(codigo.id)}

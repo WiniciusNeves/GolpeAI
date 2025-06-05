@@ -5,9 +5,10 @@ import { useParams, useRouter } from 'next/navigation'
 import {
   getValidacaoById,
   concluirCodigo,
-  CodigoValidacao
+  CodigoValidacao,
+  denunciarGolpe,
 } from '@/services/validacaoService'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react' // importei o ícone de seta
 
 export default function VerificacaoPage() {
   const { id } = useParams()
@@ -16,6 +17,7 @@ export default function VerificacaoPage() {
   const [validacao, setValidacao] = useState<CodigoValidacao | null>(null)
   const [loading, setLoading] = useState(true)
   const [concluindo, setConcluindo] = useState(false)
+  const [denunciando, setDenunciando] = useState(false)
   const [fotoZoom, setFotoZoom] = useState<string | null>(null)
 
   const abrirFotoZoom = (url: string) => setFotoZoom(url)
@@ -25,14 +27,7 @@ export default function VerificacaoPage() {
     const fetchValidacao = async () => {
       setLoading(true)
       try {
-        // Substitua os valores abaixo pelos dados reais se disponíveis
-        const dados = await getValidacaoById(
-          Number(id),
-          '', // email
-          '', // endereco
-          '', // telefone
-          ''  // placa
-        )
+        const dados = await getValidacaoById(Number(id))
         setValidacao(dados)
       } catch (err) {
         console.error('Erro ao carregar validação:', err)
@@ -64,11 +59,47 @@ export default function VerificacaoPage() {
     }
   }
 
+  const handleDenunciarGolpe = async () => {
+    if (!validacao) return
+
+    if (validacao.status === 'DENUNCIADO') {
+      alert('Este código já foi denunciado e não pode ser denunciado novamente.')
+      return
+    }
+
+    setDenunciando(true)
+    try {
+      await denunciarGolpe({
+        codigo: validacao.codigoVerificacao,
+        usuarioId: validacao.usuario.id,
+        entregadorId: validacao.entregador.id,
+        motivo: 'Foto, placa ou dados não conferem com o esperado.',
+      })
+
+      alert('Tentativa de golpe denunciada! Nosso suporte irá verificar.')
+      router.push('/dashboard')
+    } catch (err) {
+      console.error('Erro ao denunciar golpe:', err)
+      alert('Erro ao denunciar golpe.')
+    } finally {
+      setDenunciando(false)
+    }
+  }
+
   if (loading) return <p>Carregando...</p>
   if (!validacao) return <p>Validação não encontrada.</p>
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
+      {/* Botão Voltar */}
+      <button
+        onClick={() => router.back()}
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Voltar
+      </button>
+
       <h1 className="text-3xl font-bold text-gray-800">Verificação do Código</h1>
 
       <div className="bg-white p-6 rounded-2xl shadow space-y-4">
@@ -83,7 +114,9 @@ export default function VerificacaoPage() {
             className={`inline-block px-2 py-1 rounded-full text-sm font-semibold ${
               validacao.status === 'PENDENTE'
                 ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-green-100 text-green-800'
+                : validacao.status === 'CONCLUIDO'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
             }`}
           >
             {validacao.status}
@@ -114,18 +147,28 @@ export default function VerificacaoPage() {
         </div>
 
         {validacao.status === 'PENDENTE' && (
-          <button
-            onClick={handleConcluir}
-            disabled={concluindo}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50"
-          >
-            <CheckCircle className="w-5 h-5" />
-            {concluindo ? 'Concluindo...' : 'Concluir Entrega'}
-          </button>
+          <>
+            <button
+              onClick={handleConcluir}
+              disabled={concluindo}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {concluindo ? 'Concluindo...' : 'Concluir Entrega'}
+            </button>
+
+            <button
+              onClick={handleDenunciarGolpe}
+              disabled={denunciando}
+              className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50"
+            >
+              <AlertTriangle className="mr-1 w-5 h-5" />
+              {denunciando ? 'Denunciando...' : 'Denunciar Tentativa de Golpe'}
+            </button>
+          </>
         )}
       </div>
 
-      {/* Modal de Zoom da Foto */}
       {fotoZoom && (
         <div
           onClick={fecharFotoZoom}

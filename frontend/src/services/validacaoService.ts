@@ -41,8 +41,9 @@ export async function validarCodigo(codigo: string, usuarioId: number, entregado
   return res.data
 }
 
-export async function getValidacaoById(id: number | string, email: string, endereco: string, telefone: string, placa: string) {
-  const res = await apiRouter.get(`/validacao/${id}`, {params:{ email, endereco, telefone, placa }})
+// Buscar validação por ID (sem enviar parâmetros extras desnecessários)
+export async function getValidacaoById(id: number | string) {
+  const res = await apiRouter.get(`/validacao/${id}`)
   return res.data
 }
 
@@ -54,7 +55,29 @@ export async function concluirCodigo(codigo: string, usuarioId: number, entregad
   return res.data
 }
 
+// Excluir uma validação pelo ID
 export async function excluirValidacao(id: number) {
   const res = await apiRouter.delete(`/validacao/excluir/${id}`)
   return res.data
+}
+
+// Denunciar tentativa de golpe
+export async function denunciarGolpe({
+  codigo,
+  usuarioId,
+  entregadorId,
+  motivo
+}: {
+  codigo: string,
+  usuarioId: number,
+  entregadorId: number,
+  motivo: string
+}) {
+  const res = await apiRouter.post('/validacao/denunciar-golpe', {
+    codigo,
+    usuarioId,
+    entregadorId,
+    motivo
+  });
+  return res.data;
 }

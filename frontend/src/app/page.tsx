@@ -1,27 +1,28 @@
-// src/app/page.tsx
 "use client";
 
 import "@/styles/auth.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Login, Register } from "../services/auth";
+import { Login, Register } from "../services/authService";
 import Cookies from "js-cookie";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AuthPage() {
   const router = useRouter();
 
-  // Login state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
-  // Register state
   const [registerNome, setRegisterNome] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
 
-  // Messages
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   useEffect(() => {
     const container = document.getElementById("container");
@@ -30,14 +31,12 @@ export default function AuthPage() {
 
     const handleRegisterClick = () => {
       container?.classList.add("active");
-      setError(null);
-      setMessage(null);
+      toast.dismiss();
     };
 
     const handleLoginClick = () => {
       container?.classList.remove("active");
-      setError(null);
-      setMessage(null);
+      toast.dismiss();
     };
 
     registerBtn?.addEventListener("click", handleRegisterClick);
@@ -51,33 +50,54 @@ export default function AuthPage() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setMessage(null);
+    toast.dismiss();
+
+    if (!loginEmail || !loginPassword) {
+      toast.warn("Preencha email e senha para entrar.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
 
     try {
       const response = await Login(loginEmail, loginPassword);
 
-      if (response?.token) {
+      if (response && response.token) {
         localStorage.setItem("auth_user", response.nome);
         localStorage.setItem("token", response.token);
-        Cookies.set("token", response.token); // Cookie para controle de sessão
+        Cookies.set("token", response.token);
 
-        router.push("/dashboard");
+        toast.success("Login realizado com sucesso!", {
+          position: "top-right",
+          autoClose: 2000,
+          onClose: () => router.push("/dashboard"),
+        });
       } else {
-        setError("Email ou senha inválidos.");
+        toast.error("Email ou senha inválidos. Por favor, tente novamente.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     } catch (err: any) {
-      setError(err.message || "Erro ao fazer login.");
+      const errorMessage =
+        err.response?.data?.message || err.message || "Erro ao fazer login. Tente novamente mais tarde.";
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setMessage(null);
+    toast.dismiss();
 
     if (!registerEmail || !registerPassword || !registerNome) {
-      setError("Por favor, preencha todos os campos.");
+      toast.warn("Por favor, preencha todos os campos para o cadastro.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       return;
     }
 
@@ -88,23 +108,32 @@ export default function AuthPage() {
       setRegisterPassword("");
       setRegisterNome("");
 
-      setMessage("Cadastro realizado com sucesso! Faça login para continuar.");
-      document.getElementById("login")?.click(); // Ativa aba de login
+      toast.success("Cadastro realizado com sucesso! Faça login para continuar.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      document.getElementById("login")?.click();
     } catch (err: any) {
-      setError(err.message || "Erro ao registrar usuário.");
+      const errorMessage =
+        err.response?.data?.message || err.message || "Erro ao registrar usuário. Tente novamente mais tarde.";
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
   return (
     <div className="container" id="container">
-      {/* Cadastro */}
+      {/* Formulário de Cadastro */}
       <div className="form-container sign-up">
         <form onSubmit={handleRegister}>
-          <h1>Criar Conta</h1>
-          <span>ou use seu email para se registrar</span>
+          <h1 className="text-2xl">Criar Conta</h1>
+          <span>Informe seus dados para criar uma conta</span>
           <input
             type="text"
-            placeholder="Nome"
+            placeholder="Nome Completo"
             value={registerNome}
             onChange={(e) => setRegisterNome(e.target.value)}
           />
@@ -121,16 +150,14 @@ export default function AuthPage() {
             onChange={(e) => setRegisterPassword(e.target.value)}
           />
           <button type="submit">Cadastrar</button>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {message && <p style={{ color: "green" }}>{message}</p>}
         </form>
       </div>
 
-      {/* Login */}
+      {/* Formulário de Login */}
       <div className="form-container sign-in">
         <form onSubmit={handleLogin}>
-          <h1>Entrar</h1>
-          <span>ou use seu email e senha</span>
+          <h1 className="text-2xl">Entrar</h1>
+          <span>Informe seu email e senha para entrar</span>
           <input
             type="email"
             placeholder="Email"
@@ -143,10 +170,7 @@ export default function AuthPage() {
             value={loginPassword}
             onChange={(e) => setLoginPassword(e.target.value)}
           />
-          <a href="#">Esqueceu sua senha?</a>
           <button type="submit">Entrar</button>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {message && <p style={{ color: "green" }}>{message}</p>}
         </form>
       </div>
 
@@ -154,17 +178,24 @@ export default function AuthPage() {
       <div className="toggle-container">
         <div className="toggle">
           <div className="toggle-panel toggle-left">
-            <h1>Bem-vindo de Volta!</h1>
+            <h1 className="text-2xl">Bem-vindo de Volta!</h1>
             <p>Insira seus dados pessoais para usar todos os recursos do site</p>
-            <button className="hidden" id="login">Entrar</button>
+            <button id="login">
+              Entrar
+            </button>
           </div>
           <div className="toggle-panel toggle-right">
-            <h1>Olá, Amigo!</h1>
+            <h1 className="text-2xl">Olá, Amigo!</h1>
             <p>Registre-se com seus dados pessoais para usar todos os recursos do site</p>
-            <button className="hidden bg-blue-600" id="register">Cadastrar</button>
+            <button id="register">
+              Cadastrar
+            </button>
           </div>
         </div>
       </div>
+
+      <ToastContainer />
     </div>
   );
 }
+

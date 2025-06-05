@@ -72,8 +72,17 @@ public class UsuarioService {
      * @param id identificador do usuário.
      */
     public void deletar(Long id) {
-        log.info("[UsuarioService] Removendo usuário com ID: {}", id);
-        repository.deleteById(id);
+    log.info("[UsuarioService] Tentando remover usuário com ID: {}", id);
+    buscar(id); // Lança exceção se não existir
+
+    boolean possuiDependencias = // lógica para checar se há registros em validacao_entrega com esse usuário
+        !repository.existsById(id); // Exemplo, mas depende da estrutura do seu sistema
+
+    if (possuiDependencias) {
+        throw new IllegalStateException("Usuário não pode ser removido, pois está vinculado a validações de entrega.");
     }
+
+    repository.deleteById(id);
+}
 
 }

@@ -5,6 +5,7 @@ import dev.inove.backend.model.Usuario;
 import dev.inove.backend.model.ValidacaoEntrega;
 import dev.inove.backend.repository.EntregadorRepository;
 import dev.inove.backend.repository.UsuarioRepository;
+import dev.inove.backend.repository.ValidacaoEntregaRepository;
 import dev.inove.backend.service.ValidacaoEntregaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador responsável pela geração, validação e conclusão de códigos de entrega.
+ * Controlador responsável pela geração, validação e conclusão de códigos de
+ * entrega.
  */
 @RestController
 @RequestMapping("/api/validacao")
@@ -25,9 +27,26 @@ public class ValidacaoEntregaController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private EntregadorRepository entregadorRepository;
+
+    @Autowired
+    private ValidacaoEntregaRepository validacaoEntregaRepository;
+
+
+    /**
+     * Retorna todos os códigos de validação gerados.
+     */
+    @GetMapping("/todos")
+    public ResponseEntity<?> listarTodosCodigos() {
+        log.info("Listando todos os códigos de validação.");
+        try {
+            return ResponseEntity.ok(validacaoEntregaRepository.findAll());
+        } catch (Exception e) {
+            log.error("Erro ao listar códigos de validação.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao listar códigos.");
+        }
+    }
 
     /**
      * Gera um novo código de validação entre usuário e entregador.
@@ -102,6 +121,22 @@ public class ValidacaoEntregaController {
         } catch (Exception e) {
             log.error("Erro ao concluir validação.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao concluir validação.");
+        }
+    }
+
+    /**
+     * Exclui um código de validação.
+     */
+    @DeleteMapping("/excluir/{id}")
+    public ResponseEntity<String> excluirValidacao(@PathVariable Long id) {
+        log.info("Excluindo validação com ID: {}", id);
+        try {
+            validacaoEntregaRepository.deleteById(id);
+            log.info("Validação excluída com sucesso.");
+            return ResponseEntity.ok("Validação excluída com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao excluir validação.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao excluir validação.");
         }
     }
 }

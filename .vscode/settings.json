@@ -11,5 +11,6 @@
             "database": "seguranca",
             "username": "postgres"
         }
-    ]
+    ],
+    "java.debug.settings.onBuildFailureProceed": true
 }

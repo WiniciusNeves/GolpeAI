@@ -15,29 +15,31 @@ import dev.inove.backend.model.ValidacaoEntrega;
 import dev.inove.backend.repository.ValidacaoEntregaRepository;
 
 /**
- * Serviço responsável pela geração, validação e conclusão de códigos de entrega.
+ * Serviço responsável pela geração, validação e conclusão de códigos de
+ * entrega.
  */
 @Service
 public class ValidacaoEntregaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidacaoEntregaService.class);
+
     @Autowired
     private ValidacaoEntregaRepository validacaoEntregaRepository;
-    
+
     @Autowired
     private TentativaGolpeService tentativaGolpeService;
+
+    public ValidacaoEntregaService(ValidacaoEntregaRepository repository) {
+        this.validacaoEntregaRepository = repository;
+    }
     
     /**
      * Gera um novo código de validação entre usuário e entregador.
      * 
-     * @param usuario   o usuário que fará a validação
+     * @param usuario    o usuário que fará a validação
      * @param entregador o entregador que fará a entrega
      * @return o código de validação gerado
      */
-    public void setValidacaoEntregaRepository(ValidacaoEntregaRepository repository) {
-        this.validacaoEntregaRepository = repository;
-    }
-
     public ValidacaoEntrega gerarValidacao(Usuario usuario, Entregador entregador) {
         ValidacaoEntrega validacao = new ValidacaoEntrega();
         validacao.setDataHora(LocalDateTime.now());
@@ -45,7 +47,7 @@ public class ValidacaoEntregaService {
         validacao.setCodigoVerificacao(gerarCodigoAleatorio(usuario.getId(), entregador.getId()));
         validacao.setUsuario(usuario);
         validacao.setEntregador(entregador);
-    
+
         return validacaoEntregaRepository.save(validacao);
     }
 

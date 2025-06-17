@@ -24,8 +24,8 @@ public class UsuarioServiceTest {
     @Test
     void deveListarUsuarios() {
         List<Usuario> usuarios = List.of(
-                new Usuario(1L, "João", "joao@email.com", "123", "Rua X", "1199999"),
-                new Usuario(2L, "Maria", "maria@email.com", "456", "Rua Y", "1188888")
+                new Usuario(1L, "João", "joao@email.com", "Rua X", "1199999"),
+                new Usuario(2L, "Maria", "maria@email.com", "Rua Y", "1188888")
         );
         when(repository.findAll()).thenReturn(usuarios);
 
@@ -37,7 +37,7 @@ public class UsuarioServiceTest {
 
     @Test
     void deveBuscarUsuarioPorId() {
-        Usuario u = new Usuario(1L, "João", "joao@email.com", "123", "Rua X", "1199999");
+        Usuario u = new Usuario(1L, "João", "joao@email.com", "Rua X", "1199999");
         when(repository.findById(1L)).thenReturn(Optional.of(u));
 
         Usuario resultado = service.buscar(1L);
@@ -48,8 +48,8 @@ public class UsuarioServiceTest {
 
     @Test
     void deveCriarUsuario() {
-        Usuario u = new Usuario(null, "João", "joao@email.com", "123", "Rua X", "1199999");
-        Usuario salvo = new Usuario(1L, "João", "joao@email.com", "123", "Rua X", "1199999");
+        Usuario u = new Usuario(null, "João", "joao@email.com", "Rua X", "1199999");
+        Usuario salvo = new Usuario(1L, "João", "joao@email.com", "Rua X", "1199999");
 
         when(repository.save(u)).thenReturn(salvo);
 
@@ -61,8 +61,8 @@ public class UsuarioServiceTest {
 
     @Test
     void deveAtualizarUsuario() {
-        Usuario u = new Usuario(null, "João Atualizado", "joao@email.com", "123", "Rua Nova", "1199999");
-        Usuario atualizado = new Usuario(1L, "João Atualizado", "joao@email.com", "123", "Rua Nova", "1199999");
+        Usuario u = new Usuario(null, "João Atualizado", "joao@email.com", "Rua Nova", "1199999");
+        Usuario atualizado = new Usuario(1L, "João Atualizado", "joao@email.com", "Rua Nova", "1199999");
 
         when(repository.save(any())).thenReturn(atualizado);
 

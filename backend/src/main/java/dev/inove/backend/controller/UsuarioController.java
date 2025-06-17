@@ -39,18 +39,20 @@ public class UsuarioController {
     /**
      * Cria um novo usuário.
      */
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<?> criar(@RequestBody Usuario usuario) {
         log.info("Criando novo usuário.");
         try {
-            if (service.buscar(usuario.getId()) != null) {
+            if (usuario.getId() != null && service.buscar(usuario.getId()) != null) {
                 log.warn("Usuário já existe com ID: {}", usuario.getId());
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("Usuário já existe com o ID: " + usuario.getId());
             }
+
             Usuario novoUsuario = service.criar(usuario);
             log.info("Usuário criado com sucesso: {}", novoUsuario.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
+
         } catch (Exception e) {
             log.error("Erro ao criar usuário.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

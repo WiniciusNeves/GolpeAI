@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SidebarMenu from "../../components/SidebarMenu";
+import SidebarMenu from "../../_components/SidebarMenu";
 
 
 export const metadata: Metadata = {

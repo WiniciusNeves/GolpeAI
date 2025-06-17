@@ -23,7 +23,7 @@ export interface CodigoValidacao {
 
 // Listar todos os códigos
 export async function listarCodigos(): Promise<CodigoValidacao[]> {
-  const res = await apiRouter.get('/validacao/')
+  const res = await apiRouter.get('validacao/')
   return res.data
 }
 

@@ -39,7 +39,7 @@ public class UsuarioController {
     /**
      * Cria um novo usuário.
      */
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<?> criar(@RequestBody Usuario usuario) {
         log.info("Criando novo usuário.");
         try {

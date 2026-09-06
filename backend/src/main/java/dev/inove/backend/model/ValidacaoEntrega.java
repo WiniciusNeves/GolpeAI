@@ -25,22 +25,24 @@ public class ValidacaoEntrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Código de verificação da entrega, pode ser utilizado para autenticar a validação
+    // Código de verificação da entrega, pode ser utilizado para autenticar a
+    // validação
     private String codigoVerificacao;
 
-    // Data e hora da validação. Usar LocalDateTime permite manipular a data e hora corretamente.
+    // Data e hora da validação. Usar LocalDateTime permite manipular a data e hora
+    // corretamente.
     private LocalDateTime dataHora;
 
     // Relacionamento muitos-para-um com a tabela de usuários (quem fez a validação)
     @ManyToOne
-    @JoinColumn(name = "usuario_id")  // Chave estrangeira para a tabela de usuários
+    @JoinColumn(name = "usuario_id", nullable = true) // <- deixar nullable
     private Usuario usuario;
 
-    // Relacionamento muitos-para-um com a tabela de entregadores (quem realizou a entrega)
     @ManyToOne
-    @JoinColumn(name = "entregador_id")  // Chave estrangeira para a tabela de entregadores
+    @JoinColumn(name = "entregador_id", nullable = true) // <- deixar nullable
     private Entregador entregador;
 
-    // Status da validação da entrega, que pode ser algo como "PENDENTE", "CONCLUÍDO" ou "CANCELADO"
+    // Status da validação da entrega, que pode ser algo como "PENDENTE",
+    // "CONCLUÍDO" ou "CANCELADO"
     private String status;
 }

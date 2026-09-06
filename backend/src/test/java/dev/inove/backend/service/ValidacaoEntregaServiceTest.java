@@ -6,25 +6,27 @@ import dev.inove.backend.model.ValidacaoEntrega;
 import dev.inove.backend.repository.ValidacaoEntregaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ValidacaoEntregaServiceTest {
 
+    @Autowired
     private ValidacaoEntregaService service;
+    @Autowired
     private ValidacaoEntregaRepository repository;
 
     @BeforeEach
     void setup() {
         repository = mock(ValidacaoEntregaRepository.class);
-        service = new ValidacaoEntregaService();
-        service.setValidacaoEntregaRepository(repository); // Use um método setter
+        service = new ValidacaoEntregaService(repository); // Use o construtor
     };
 
     @Test
     void deveGerarValidacaoComUsuarioEEntregador() {
-        Usuario usuario = new Usuario(1L, "João", "joao@email.com", "senha", "Rua X", "1199999");
+        Usuario usuario = new Usuario(1L, "João", "joao@email.com", "Rua X", "1199999");
         Entregador entregador = new Entregador(1L, "Carlos", "carlos@email.com", "ABC1234", "urlFoto", "iFood");
 
         ValidacaoEntrega esperado = new ValidacaoEntrega();
@@ -44,3 +46,4 @@ public class ValidacaoEntregaServiceTest {
         assertEquals("João", resultado.getUsuario().getNome());
     }
 }
+
